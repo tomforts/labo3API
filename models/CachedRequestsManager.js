@@ -5,12 +5,12 @@ let requestCachesExpirationTime = serverVariables.get("main.repository.CacheExpi
 
 // Repository file data models cache
 global.requestCaches = [];
-global.cachedRepositoriesCleanerStarted = false;
+global.cachedRequestsCleanerStarted = false;
 
 export default class CachedRequestsManager {
     static add(url, content, ETag = "") {
-        if (!cachedRepositoriesCleanerStarted) {
-            cachedRepositoriesCleanerStarted = true;
+        if (!cachedRequestsCleanerStarted) {
+            cachedRequestsCleanerStarted = true;
             CachedRequestsManager.startCachedRequestsCleaner();
         }
         if (url) {
@@ -27,15 +27,15 @@ export default class CachedRequestsManager {
     static startCachedRequestsCleaner() {
         // periodic cleaning of expired cached repository data
         setInterval(CachedRequestsManager.flushExpired, requestCachesExpirationTime * 1000);
-        console.log(BgWhite + FgBlue, "[Periodic repositories data caches cleaning process started...]");
+        console.log(BgWhite + FgBlue, "[Periodic requests data caches cleaning process started...]");
 
     }
-    static clear(model) {
-        if (model != "") {
+    static clear(url) {
+        if (url) {
             let indexToDelete = [];
             let index = 0;
             for (let cache of requestCaches) {
-                if (cache.model == model) indexToDelete.push(index);
+                if (cache.url == url) indexToDelete.push(index);
                 index++;
             }
             utilities.deleteByIndex(requestCaches, indexToDelete);
@@ -45,16 +45,16 @@ export default class CachedRequestsManager {
         try {
             if (url) {
                 for (let cache of requestCaches) {
-                    if (cache.model == model) {
+                    if (cache.url == url) {
                         // renew cache
                         cache.Expire_Time = utilities.nowInSeconds() + requestCachesExpirationTime;
-                        console.log(BgWhite + FgBlue, `[${cache.model} data retrieved from cache]`);
-                        return cache.data;
+                        console.log(BgWhite + FgBlue, `[${cache.url} data retrieved from cache]`);
+                        return cache.content;
                     }
                 }
             }
         } catch (error) {
-            console.log(BgWhite + FgRed, "[repository cache error!]", error);
+            console.log(BgWhite + FgRed, "[request cache error!]", error);
         }
         return null;
     }
@@ -62,7 +62,7 @@ export default class CachedRequestsManager {
         let now = utilities.nowInSeconds();
         for (let cache of requestCaches) {
             if (cache.Expire_Time <= now) {
-                console.log(BgWhite + FgBlue, "Cached file data of " + cache.model + ".json expired");
+                console.log(BgWhite + FgBlue, "Cached file data for " + cache.url + " has expired");
             }
         }
         requestCaches = requestCaches.filter( cache => cache.Expire_Time > now);
