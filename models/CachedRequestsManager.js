@@ -21,7 +21,7 @@ export default class CachedRequestsManager {
                 ETag,
                 Expire_Time: utilities.nowInSeconds() + requestCachesExpirationTime
             });
-            console.log(BgWhite + FgBlue, `[Data of ${url} repository has been cached]`);
+            console.log(BgWhite + FgBlue, `[Data of ${url} has been cached]`);
         }
     }
     static startCachedRequestsCleaner() {
@@ -66,5 +66,13 @@ export default class CachedRequestsManager {
             }
         }
         requestCaches = requestCaches.filter( cache => cache.Expire_Time > now);
+    }
+    static get(HttpContext){
+        let url = HttpContext.req.url;
+        let data = CachedRequestsManager.find(url);
+
+        if(data){
+            HttpContext.response.JSON(data.content, data.ETag, true);
+        }
     }
 }
