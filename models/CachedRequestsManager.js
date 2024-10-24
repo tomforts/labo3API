@@ -48,7 +48,7 @@ export default class CachedRequestsManager {
                     if (cache.url == url) {
                         // renew cache
                         cache.Expire_Time = utilities.nowInSeconds() + requestCachesExpirationTime;
-                        console.log(BgWhite + FgBlue, `[${cache.url} data retrieved from cache]`);
+                        console.log(BgWhite + FgBlue, `[${cache.url} retrieved from cache]`);
                         return cache.content;
                     }
                 }
@@ -72,6 +72,7 @@ export default class CachedRequestsManager {
         let data = CachedRequestsManager.find(url);
 
         if(data){
+            console.log(BgWhite + FgBlue, "Cached file data for " + cache.url + " has been extracted");
             HttpContext.response.JSON(data.content, data.ETag, true);
         }
     }
